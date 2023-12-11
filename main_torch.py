@@ -5,10 +5,6 @@ import torch.nn as nn
 
 from datasets import download_cora, load_data, train_val_test_mask
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
 
 class GCNLayer(nn.Module):
     def __init__(self, x_dim, h_dim, bias=True):
@@ -37,8 +33,12 @@ class GCNLayer(nn.Module):
 class GCN(nn.Module):
     def __init__(self, x_dim, h_dim, out_dim, nb_layers=2, dropout=0.5, bias=True):
         super(GCN, self).__init__()
-        self.gcn_1 = GCNLayer(x_dim, h_dim, bias)
-        self.gcn_2 = GCNLayer(h_dim, out_dim, bias)
+
+        layer_sizes = [x_dim] + [h_dim] * nb_layers + [out_dim]
+        self.gcn_layers = nn.Sequential(*[
+            GCNLayer(in_dim, out_dim, bias)
+            for in_dim, out_dim in zip(layer_sizes[:-1], layer_sizes[1:])
+        ])
         self.dropout = nn.Dropout(p=dropout)
 
     def initialize_weights(self):
@@ -46,15 +46,17 @@ class GCN(nn.Module):
         self.gcn_2.initialize_weights()
 
     def forward(self, x, adj):
-        x = F.relu(self.gcn_1(x, adj))
-        x = self.dropout(x)
-        x = self.gcn_2(x, adj)
+        for layer in self.gcn_layers[:-1]:
+            x = torch.relu(layer(x, adj))
+            x = self.dropout(x)
+        
+        x = self.gcn_layers[-1](x, adj)
         return x
 
 
 def to_torch(device, x, y, adj, train_mask, val_mask, test_mask):
     x = torch.tensor(x, dtype=torch.float32, device=device)
-    y = torch.tensor(y, dtype=torch.int32, device=device)
+    y = torch.tensor(y, dtype=torch.long, device=device)
     adj = torch.tensor(adj, dtype=torch.float32, device=device)
     train_mask = torch.tensor(train_mask, device=device)
     val_mask = torch.tensor(val_mask, device=device)
@@ -107,17 +109,19 @@ def main(args, device):
         optimizer.step()
 
         # Validation
-        val_loss = loss_fn(y_hat[val_mask], y[val_mask])
-        val_acc = eval_fn(y_hat[val_mask], y[val_mask])
+        with torch.no_grad():
+            gcn.eval()
+            val_loss = loss_fn(y_hat[val_mask], y[val_mask])
+            val_acc = eval_fn(y_hat[val_mask], y[val_mask])
 
-        # Early stopping
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            cnt = 0
-        else:
-            cnt += 1
-            if cnt == args.patience:
-                break
+            # Early stopping
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                cnt = 0
+            else:
+                cnt += 1
+                if cnt == args.patience:
+                    break
 
         print(
             " | ".join(
@@ -143,13 +147,13 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--nodes_path", type=str, default="cora/cora.content")
     parser.add_argument("--edges_path", type=str, default="cora/cora.cites")
-    parser.add_argument("--h_dim", type=int, default=20)
+    parser.add_argument("--h_dim", type=int, default=16)
     parser.add_argument("--dropout", type=float, default=0.5)
     parser.add_argument("--nb_layers", type=int, default=2)
     parser.add_argument("--nb_classes", type=int, default=7)
     parser.add_argument("--bias", type=bool, default=True)
-    parser.add_argument("--lr", type=float, default=0.001)
-    parser.add_argument("--weight_decay", type=float, default=0.0)
+    parser.add_argument("--lr", type=float, default=0.01)
+    parser.add_argument("--weight_decay", type=float, default=5e-3)
     parser.add_argument("--patience", type=int, default=20)
     parser.add_argument("--epochs", type=int, default=100)
     args = parser.parse_args()

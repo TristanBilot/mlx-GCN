@@ -4,6 +4,7 @@ import mlx.core as mx
 import mlx.nn as nn
 import mlx.optimizers as optim
 from mlx.nn.losses import cross_entropy
+from mlx.utils import tree_flatten
 
 from datasets import download_cora, load_data, train_val_test_mask
 from gcn import GCN
@@ -18,10 +19,11 @@ def loss_fn(y_hat, y, weight_decay=0.0, parameters=None):
         l2_reg = mx.zeros(
             1,
         )
-        for k1, v1 in parameters.items():
-            for k2, v2 in v1.items():
-                l2_reg += mx.sum(v2["weight"] ** 2)
+        for leaf in tree_flatten(parameters):
+            l2_reg += mx.sum(leaf[1]**2)
+        l2_reg = mx.sqrt(l2_reg)
         return l + weight_decay * l2_reg.item()
+
     return l
 
 
@@ -119,13 +121,13 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--nodes_path", type=str, default="cora/cora.content")
     parser.add_argument("--edges_path", type=str, default="cora/cora.cites")
-    parser.add_argument("--hidden_dim", type=int, default=20)
+    parser.add_argument("--hidden_dim", type=int, default=16)
     parser.add_argument("--dropout", type=float, default=0.5)
     parser.add_argument("--nb_layers", type=int, default=2)
     parser.add_argument("--nb_classes", type=int, default=7)
     parser.add_argument("--bias", type=bool, default=True)
-    parser.add_argument("--lr", type=float, default=0.001)
-    parser.add_argument("--weight_decay", type=float, default=0.0)
+    parser.add_argument("--lr", type=float, default=0.01)
+    parser.add_argument("--weight_decay", type=float, default=5e-3)
     parser.add_argument("--patience", type=int, default=20)
     parser.add_argument("--epochs", type=int, default=100)
     args = parser.parse_args()
