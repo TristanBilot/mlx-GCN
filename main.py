@@ -35,6 +35,16 @@ def forward_fn(gcn, x, adj, y, train_mask, weight_decay):
     return loss, y_hat
 
 
+def to_mlx(x, y, adj, train_mask, val_mask, test_mask):
+    x = mx.array(x, mx.float32)
+    y = mx.array(y, mx.int32)
+    adj = mx.array(adj)
+    train_mask = mx.array(train_mask)
+    val_mask = mx.array(val_mask)
+    test_mask = mx.array(test_mask)
+    return x, y, adj, train_mask, val_mask, test_mask
+
+
 def main(args):
 
     # Data loading
@@ -42,6 +52,9 @@ def main(args):
 
     x, y, adj = load_data(args)
     train_mask, val_mask, test_mask = train_val_test_mask(y, args.nb_classes)
+    
+    x, y, adj, train_mask, val_mask, test_mask = \
+        to_mlx(x, y, adj, train_mask, val_mask, test_mask)
 
     gcn = GCN(
         x_dim=x.shape[-1],

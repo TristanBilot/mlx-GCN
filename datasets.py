@@ -2,7 +2,6 @@ import os
 import requests
 import tarfile
 
-import mlx.core as mx
 import numpy as np
 import scipy.sparse as sparse
 
@@ -41,9 +40,9 @@ def download_cora():
 def train_val_test_mask(labels, num_classes):
     """Splits the loaded dataset into train/validation/test sets."""
 
-    train_set = mx.array(list(range(140)))
-    validation_set = mx.array(list(range(200, 500)))
-    test_set = mx.array(list(range(500, 1500)))
+    train_set = list(range(140))
+    validation_set = list(range(200, 500))
+    test_set = list(range(500, 1500))
 
     return train_set, validation_set, test_set
 
@@ -105,10 +104,5 @@ def load_data(config):
     adj = adj + adj.T.multiply(adj.T > adj)
     adj = normalize_adjacency(adj)
 
-    # Convert to mlx array
-    features = mx.array(node_features.toarray(), mx.float32)
-    labels = mx.array(labels_enumerated, mx.int32)
-    adj = mx.array(adj.toarray())
-
     print("Dataset loaded.")
-    return features, labels, adj
+    return node_features.toarray(), labels_enumerated, adj.toarray()
