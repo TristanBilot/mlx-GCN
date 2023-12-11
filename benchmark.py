@@ -4,6 +4,9 @@ import numpy as np
 
 
 def run(args):
+    assert args.experiment in ["torch_cpu", "torch_mps", "torch_cuda", "mlx"], \
+        "Invalid backend."
+
     if args.experiment == 'mlx':
         from main import main as mlx_main
 
