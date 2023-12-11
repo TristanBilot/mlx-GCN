@@ -15,3 +15,9 @@ To try the model, just run the `main.py` file. This will download the Cora datas
 ```
 python main.py
 ```
+
+### Run benchmark
+
+```
+python benchmark.py --experiment=[ mlx | torch_mps | torch_cpu | torch_cuda ]
+```

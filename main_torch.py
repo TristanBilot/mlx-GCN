@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from time import time
 
 import torch
 import torch.nn as nn
@@ -80,7 +81,7 @@ def main(args, device):
 
     gcn = GCN(
         x_dim=x.shape[-1],
-        h_dim=args.h_dim,
+        h_dim=args.hidden_dim,
         out_dim=args.nb_classes,
         nb_layers=args.nb_layers,
         dropout=args.dropout,
@@ -95,9 +96,11 @@ def main(args, device):
 
     best_val_loss = float("inf")
     cnt = 0
+    times = []
 
     # Training loop
     for epoch in range(args.epochs):
+        start = time()
 
         optimizer.zero_grad()
         gcn.train()
@@ -113,6 +116,8 @@ def main(args, device):
             gcn.eval()
             val_loss = loss_fn(y_hat[val_mask], y[val_mask])
             val_acc = eval_fn(y_hat[val_mask], y[val_mask])
+
+            times.append(time() - start)
 
             # Early stopping
             if val_loss < best_val_loss:
@@ -138,8 +143,11 @@ def main(args, device):
     test_y_hat = gcn(x, adj)
     test_loss = loss_fn(y_hat[test_mask], y[test_mask])
     test_acc = eval_fn(y_hat[test_mask], y[test_mask])
+    mean_time = sum(times) / len(times)
 
     print(f"Test loss: {test_loss.item():.3f}  |  Test acc: {test_acc.item():.2f}")
+    print(f"Mean time: {mean_time:.5f}")
+    return mean_time
 
 
 if __name__ == "__main__":
@@ -147,7 +155,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--nodes_path", type=str, default="cora/cora.content")
     parser.add_argument("--edges_path", type=str, default="cora/cora.cites")
-    parser.add_argument("--h_dim", type=int, default=16)
+    parser.add_argument("--hidden_dim", type=int, default=16)
     parser.add_argument("--dropout", type=float, default=0.5)
     parser.add_argument("--nb_layers", type=int, default=2)
     parser.add_argument("--nb_classes", type=int, default=7)
