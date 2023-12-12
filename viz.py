@@ -9,8 +9,8 @@ cora_label_to_color_map = {0: "red", 1: "blue", 2: "green",
 
 def benchmark_plot():
     # Data for the benchmark graph
-    backends = ['MLX', 'MPS', 'CPU']
-    times = [9.02, 40.74, 58.69, ]
+    backends = ['MLX', 'MPS', 'CPU', 'CUDA (PCIe)', 'CUDA (NVLINK)']
+    times = [9.02, 40.74, 58.69, 3.83, 3.51]
 
     plt.figure(figsize=(10, 6))
     bars = plt.barh(backends, times, color='skyblue', edgecolor='black')
@@ -19,7 +19,10 @@ def benchmark_plot():
     plt.title('Benchmarking MLX and PyTorch Backends')
     plt.gca().invert_yaxis()
 
-    plt.show()
+    for index, value in enumerate(times):
+        plt.text(value, index, f' {value} ms', va='center_baseline', color='black')
+
+    plt.savefig("bench.png")
 
 
 def visualize_embedding_tSNE(labels, out_features, num_classes):
