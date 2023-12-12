@@ -17,13 +17,8 @@ def loss_fn(y_hat, y, weight_decay=0.0, parameters=None):
     if weight_decay != 0.0:
         assert parameters != None, "Model parameters missing for L2 reg."
 
-        l2_reg = mx.zeros(
-            1,
-        )
-        for leaf in tree_flatten(parameters):
-            l2_reg += mx.sum(leaf[1]**2)
-        l2_reg = mx.sqrt(l2_reg)
-        return l + weight_decay * l2_reg.item()
+        l2_reg = sum(mx.sum(p[1] ** 2) for p in tree_flatten(parameters)).sqrt()
+        return l + weight_decay * l2_reg
 
     return l
 
