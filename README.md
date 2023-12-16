@@ -2,7 +2,7 @@
 
 An example of [GCN](https://arxiv.org/pdf/1609.02907.pdf%EF%BC%89) implementation with MLX. Other examples are available <a href="https://github.com/ml-explore/mlx-examples">here</a>.
 
-The actual MLX code is located in `main.py`, whereas the PyTorch equivalent is in `main_torch.py`.
+The actual benchmark on **M1 Pro**, **M2 Ultra**, **M3 Max** and **Tesla V100**s is explained in <a href="https://towardsdatascience.com/mlx-vs-mps-vs-cuda-a-benchmark-c5737ca6efc9">this Medium article</a>.
 
 ### Install env and requirements
 
@@ -14,7 +14,7 @@ pip install mlx
 ```
 
 ### Run
-To try the model, just run the `main.py` file. This will download the Cora dataset, run the training and testing.
+To try the model, just run the `main.py` file. This will download the Cora dataset, run the training and testing. The actual MLX code is located in `main.py`, whereas the PyTorch equivalent is in `main_torch.py`.
 
 ```
 python main.py
