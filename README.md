@@ -2,14 +2,15 @@
 
 An example of [GCN](https://arxiv.org/pdf/1609.02907.pdf%EF%BC%89) implementation with MLX. Other examples are available <a href="https://github.com/ml-explore/mlx-examples">here</a>.
 
-The acutal MLX code is in `main.py`, whereas the PyTorch equivalent is in `main_torch.py`.
+The actual MLX code is located in `main.py`, whereas the PyTorch equivalent is in `main_torch.py`.
 
 ### Install env and requirements
 
 ```
-CONDA_SUBDIR=osx-arm64 conda create -n mlx python=3.10 numpy -c conda-forge
+CONDA_SUBDIR=osx-arm64 conda create -n mlx python=3.10 numpy pytorch scipy requests -c conda-forge
+
 conda activate mlx
-pip install -r requirements.txt
+pip install mlx
 ```
 
 ### Run
@@ -20,7 +21,7 @@ python main.py
 ```
 
 ### Run benchmark
-To run benchmark on torch_mps | torch_cpu | torch_cuda, a new env needs to be set up without the `CONDA_SUBDIR=osx-arm64` prefix, to be in i386 mode and not arm. Additional dependencies like `torch` also need be installed in the env to run these benchmark.
+To run the benchmark on CUDA device, a new env needs to be set up without the `CONDA_SUBDIR=osx-arm64` prefix, to be in i386 mode and not arm. For all other experiments on arm and Apple Silicon, just use the env created previously.
 ```
 python benchmark.py --experiment=[ mlx | torch_mps | torch_cpu | torch_cuda ]
 ```

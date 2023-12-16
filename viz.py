@@ -8,19 +8,45 @@ cora_label_to_color_map = {0: "red", 1: "blue", 2: "green",
 
 
 def benchmark_plot():
-    # Data for the benchmark graph
-    backends = ['MLX', 'MPS', 'CPU', 'CUDA (PCIe)', 'CUDA (NVLINK)']
-    times = [9.02, 40.74, 58.69, 3.83, 3.51]
+    backends = [
+        '  CPU', '  MPS', '  MLX',
+        ' CPU', ' MPS', ' MLX',
+        'CPU', 'MPS', 'MLX',
+        'CUDA (PCIe)', 'CUDA (NVLINK)',
+    ]
+    times = [
+         45.58, 21.10, 9.02,
+        9.31, 7.19,  5.8,
+        7.07, 4.8,  4.72,
+        3.83, 3.51,
+    ]
+
+    # Setting colors
+    colors = [
+        '#FFCC99' for _ in range(3)] \
+        + ['#9999FF' for _ in range(3)] \
+        + ['#FF9999' for _ in range(3)] \
+        + ['skyblue' for _ in range(2)]
 
     plt.figure(figsize=(10, 6))
-    bars = plt.barh(backends, times, color='skyblue', edgecolor='black')
+    bars = plt.barh(backends, times, color=colors, edgecolor='black')
 
-    plt.xlabel('Time per epoch (ms)')
+    plt.xlabel('Mean time per epoch (ms)')
     plt.title('Benchmarking MLX and PyTorch Backends')
     plt.gca().invert_yaxis()
 
     for index, value in enumerate(times):
-        plt.text(value, index, f' {value} ms', va='center_baseline', color='black')
+        plt.text(value, index, f' {value} ms', va='center')
+
+    # Adding a legend
+    legend_elements = [
+        plt.Line2D([0], [0], color='#FFCC99', lw=4, label='M1 Pro'),
+        plt.Line2D([0], [0], color='#9999FF', lw=4, label='M2 Ultra'),
+        plt.Line2D([0], [0], color='#FF9999', lw=4, label='M3 Max'),
+        plt.Line2D([0], [0], color='skyblue', lw=4, label='Tesla V100')
+    ]
+    plt.legend(handles=legend_elements, loc='lower right')
+
 
     plt.savefig("bench.png")
 
